@@ -38,12 +38,11 @@ public class ScatterAdd extends Application {
     private final XYSeries trend = new XYSeries("Trend");
     private final XYSeriesCollection dataset = new XYSeriesCollection(series);
 
+
     ChoiceBox<String> domainLabels = new ChoiceBox<>();
     ChoiceBox<String> rangeLabels = new ChoiceBox<>();
 
     private JFreeChart createChart() {
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series);
         return ChartFactory.createScatterPlot("VI Characteristics", "Current", "Voltage", dataset);
     }
 
@@ -52,32 +51,34 @@ public class ScatterAdd extends Application {
 
         Image image = new Image("Grava.logo.png");
         stage.getIcons().add(image);
+        var chart = createChart();
 
 
-        XYPlot plot = createChart().getXYPlot();
+
+        XYPlot plot = chart.getXYPlot();
         plot.setDomainCrosshairVisible(true);
         plot.setRangeCrosshairVisible(true);
-        /*
-        plot.setDomainCrosshairVisible(true);
-        plot.setRangeCrosshairVisible(true);
-        adjustAxis((NumberAxis) plot.getDomainAxis(), true);
-        adjustAxis((NumberAxis) plot.getRangeAxis(), false);
-        */
         XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) plot.getRenderer();
         r.setSeriesLinesVisible(1, Boolean.TRUE);
         r.setSeriesShapesVisible(1, Boolean.FALSE);
 
+
         var equation = new TextField();
-
         series.addChangeListener((event) -> {
-            double[] coefficients = Regression.getOLSRegression(dataset, 0);
-            double b = coefficients[0]; // intercept
-            double m = coefficients[1]; // slope
-            equation.setText("y = " + m + " x + " + b);
+            if (series.getItemCount() > 1) {
+                double[] coefficients = Regression.getOLSRegression(dataset, 0);
+                double b = coefficients[0]; // intercept
+                double m = coefficients[1]; // slope
+                equation.setText("y = " + m + " x + " + b);
+                double x = series.getDataItem(0).getXValue();
+                trend.clear();
+                trend.add(x, m * x + b);
+                x = series.getDataItem(series.getItemCount() - 1).getXValue();
+                trend.add(x, m * x + b);
+                dataset.addSeries(trend);
 
+            }
         });
-
-        JFreeChart chart = createChart();
         domainLabels.getSelectionModel().selectedItemProperty().addListener((ov, s0, s1) -> {
             chart.getXYPlot().getDomainAxis().setLabel(s1);
         });
@@ -101,8 +102,7 @@ public class ScatterAdd extends Application {
 
         var button = new Button("Add");
         button.setOnAction(ae -> series.add(xSpin.getValue(), ySpin.getValue()));
-
-
+        xSpin
         HBox xBox = new HBox();
         xBox.getChildren().addAll(domainLabels);
 
@@ -121,13 +121,6 @@ public class ScatterAdd extends Application {
         stage.show();
 
     }
-    /*
-    private void adjustAxis(NumberAxis axis, boolean vertical) {
-        axis.setRange(-3.0, 3.0);
-        axis.setTickUnit(new NumberTickUnit(0.5));
-        axis.setVerticalTickLabels(vertical);
-    }
-*/
 
     public static void main(String[] args) {
         launch(args);
