@@ -1,11 +1,14 @@
 package Grava;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -21,19 +24,18 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import java.util.List;
 
-public class ScatterAdd extends Application {
+public class Grava extends Application {
 
 
     private static final XYSeries series = new XYSeries("Voltage");
     private final XYSeries trend = new XYSeries("Trend");
     private final XYSeriesCollection dataset = new XYSeriesCollection(series);
-    TableView table;
 
     ChoiceBox<String> domainLabels = new ChoiceBox<>();
     ChoiceBox<String> rangeLabels = new ChoiceBox<>();
 
     private JFreeChart createChart() {
-        return ChartFactory.createScatterPlot("VI Characteristics", "Current", "Voltage", dataset);
+        return ChartFactory.createScatterPlot("Grava", "Current", "Voltage", dataset);
     }
 
     @Override
@@ -45,29 +47,36 @@ public class ScatterAdd extends Application {
 
 
         XYPlot plot = chart.getXYPlot();
+        dataset.addSeries(trend);
         plot.setDomainCrosshairVisible(true);
         plot.setRangeCrosshairVisible(true);
         XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) plot.getRenderer();
         r.setSeriesLinesVisible(1, Boolean.TRUE);
         r.setSeriesShapesVisible(1, Boolean.FALSE);
 
+        /*TableColumn xColumn = new TableColumn("X:");
+        xColumn.setMinWidth(200);
+        xColumn.setCellValueFactory(new PropertyValueFactory<>("X"));
+
+        TableColumn yColumn = new TableColumn("Y:");
+        xColumn.setMinWidth(200);
+        xColumn.setCellValueFactory(new PropertyValueFactory<>("Y"));*/
+
 
         var equation = new TextField();
-        var rValuebox = new TextField();
-        var rBox = new TextField();
+
         series.addChangeListener((event) -> {
             if (series.getItemCount() > 1) {
                 double[] coefficients = Regression.getOLSRegression(dataset, 0);
-                double b = coefficients[0]; // intercept
+                double c = coefficients[0]; // intercept
                 double m = coefficients[1]; // slope
-                equation.setText("y = " + m + " x + " + b);
+                equation.setText("y = " + m + " x + " + c);
                 double x = series.getDataItem(0).getXValue();
-                /*trend.clear();
-                trend.add(x, m * x + b);
+                trend.clear();
+                trend.add(x, m * x + c);
                 x = series.getDataItem(series.getItemCount() - 1).getXValue();
-                trend.add(x, m * x + b);
-                dataset.addSeries(trend);*/
-                equation.setText(String.valueOf(series.getDataItem(0).getXValue()));
+                trend.add(x, m * x + c);
+                //equation.setText(String.valueOf(series.getDataItem(0).getXValue()));
 
             }
         });
@@ -86,20 +95,6 @@ public class ScatterAdd extends Application {
         rangeLabels.getItems().addAll("Voltage", "Metres");
         rangeLabels.setValue("Voltage");
 
-        Number[] xList = {1,2,3,4,5,6};
-        Number[] yList = {2,4,7,9,12,14};
-
-        System.out.println(xList[1]);
-        List arr = series.getItems();
-
-        double[][] arr1 = series.toArray();
-
-        int i;
-        float sum;
-        for (i = 0; i < (series.getItemCount() - 1); i++) {
-            sum = (int) series.getDataItem(i).getX().floatValue();
-        }
-
 
         var xSpin = new Spinner<Double>(-10000000.000, 10000000.000, 0, 0.1);
         xSpin.setEditable(true);
@@ -112,29 +107,21 @@ public class ScatterAdd extends Application {
         var addButton = new Button("Add");
         addButton.setOnAction(ae -> series.add(xSpin.getValue(), ySpin.getValue()));
 
-        var rValButton = new Button("r Value");
-        rValButton.setOnAction(ae -> rValuebox.setText(String.valueOf(arr1[1]) ) );
-
-        var rButton = new Button("");
-        rButton.setOnAction(ae -> {
-                    Number[] array = (Number[]) arr.get(0);
-                    Number[] array2 = (Number[]) arr.get(1);
-                    float seriesList = (float) Statistics.getCorrelation(array,array2);
-                    rBox.setText(String.valueOf(seriesList));
-                });
-
-        var testButton = new Button("test");
-        testButton.setOnAction(ae -> {
+        var g = chart.getXYPlot().getRenderer();
+        var cb = new CheckBox("Trend");
+        cb.setSelected(true);
+        cb.selectedProperty().addListener((o) -> {
             if (series.getItemCount() > 1) {
-                double[] coefficients = Regression.getOLSRegression(dataset, 0);
+                g.setSeriesVisible(1, cb.isSelected());
+                /*double[] coefficients = Regression.getOLSRegression(dataset, 0);
                 double b = coefficients[0]; // intercept
                 double m = coefficients[1]; // slope
                 double x = series.getDataItem(0).getXValue();
                 trend.clear();
-                trend.add(x, m * x + b);
+                trend.add(x, m * x + c);
                 x = series.getDataItem(series.getItemCount() - 1).getXValue();
-                trend.add(x, m * x + b);
-                dataset.addSeries(trend);
+                trend.add(x, m * x + c);
+                dataset.addSeries(trend);*/
             }
         });
 
@@ -145,7 +132,7 @@ public class ScatterAdd extends Application {
         HBox yBox = new HBox();
         yBox.getChildren().addAll(rangeLabels);
 
-        var enter = new ToolBar(xBox, xSpin, yBox, ySpin, addButton, equation, rValButton, rValuebox, testButton,rButton, rBox);
+        var enter = new ToolBar(cb,xBox, xSpin, yBox, ySpin, addButton, equation);
         BorderPane.setAlignment(enter, Pos.CENTER);
 
         BorderPane root = new BorderPane();
