@@ -41,6 +41,7 @@ public class Grava extends Application {
     ChoiceBox<String> rangeLabels = new ChoiceBox<>();
     List seriesList = series.getItems();
     List xList = new ArrayList();
+    List yList = new ArrayList();
 
     double xArr[];
     double yArr[];
@@ -142,6 +143,7 @@ public class Grava extends Application {
 
                 series.add(xSpin.getValue(), ySpin.getValue());
                 xList.add(xSpin.getValue());
+                yList.add(ySpin.getValue());
                 String yLabel = rangeLabels.getValue();
                 String xLabel = domainLabels.getValue();
 
@@ -176,8 +178,35 @@ public class Grava extends Application {
 
         var testButton = new Button("testBut");
         testButton.setOnAction(ae -> {
-            System.out.println(xList.size());
-            System.out.print(xList.get(1));
+            //System.out.println(xList.size());
+            //System.out.print(xList.get(2));
+
+            double sx = 0.0;
+            double sy = 0.0;
+            double sxx = 0.0;
+            double syy = 0.0;
+            double sxy = 0.0;
+
+            int n = xList.size();
+
+            for(int i = 0; i < n; ++i) {
+                double x = (double) xList.get(i);
+                double y = (double) yList.get(i);
+
+                sx += x;
+                sy += y;
+                sxx += x * x;
+                syy += y * y;
+                sxy += x * y;
+            }
+
+            // covariation
+            double cov = sxy / n - sx * sy / n / n;
+            // standard error of x
+            double sigmax = Math.sqrt(sxx / n -  sx * sx / n / n);
+            // standard error of y
+            double sigmay = Math.sqrt(syy / n -  sy * sy / n / n);
+            System.out.println(cov);
         } );
 
         var deleteButton = new Button("clear last value");
