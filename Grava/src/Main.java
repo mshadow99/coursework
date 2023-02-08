@@ -1,34 +1,35 @@
-package Grava;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
+        package Grava;
 
-import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
+        import java.text.DecimalFormat;
+        import java.util.ArrayList;
+        import java.util.List;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.fx.ChartViewer;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.statistics.Regression;;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
+        import javafx.application.Application;
+        import javafx.collections.FXCollections;
+        import javafx.collections.ObservableList;
+        import javafx.geometry.Pos;
+        import javafx.scene.Scene;
+        import javafx.scene.control.Button;
+        import javafx.scene.control.TextField;
+        import javafx.scene.control.*;
+        import javafx.scene.control.cell.PropertyValueFactory;
+        import javafx.scene.image.Image;
+        import javafx.scene.layout.BorderPane;
+        import javafx.scene.layout.HBox;
+        import javafx.stage.Stage;
+
+        import org.jfree.chart.ChartFactory;
+        import org.jfree.chart.JFreeChart;
+        import org.jfree.chart.fx.ChartViewer;
+        import org.jfree.chart.plot.XYPlot;
+        import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+        import org.jfree.data.statistics.Regression;;
+        import org.jfree.data.xy.XYSeries;
+        import org.jfree.data.xy.XYSeriesCollection;
 
 
-public class Grava extends Application {
+public class Maths extends Application {
 
 
     private static final XYSeries series = new XYSeries("Voltage");
@@ -41,7 +42,6 @@ public class Grava extends Application {
     ChoiceBox<String> rangeLabels = new ChoiceBox<>();
     List seriesList = series.getItems();
     List xList = new ArrayList();
-    List yList = new ArrayList();
 
     double xArr[];
     double yArr[];
@@ -141,15 +141,14 @@ public class Grava extends Application {
         var addButton = new Button("Add");
         addButton.setOnAction(ae -> {
 
-                series.add(xSpin.getValue(), ySpin.getValue());
-                xList.add(xSpin.getValue());
-                yList.add(ySpin.getValue());
-                String yLabel = rangeLabels.getValue();
-                String xLabel = domainLabels.getValue();
+            series.add(xSpin.getValue(), ySpin.getValue());
+            xList.add(xSpin.getValue());
+            String yLabel = rangeLabels.getValue();
+            String xLabel = domainLabels.getValue();
 
-                    if (series.getItemCount() > 1) {
-                        //xArr[1] = ;
-                    }
+            if (series.getItemCount() > 1) {
+                //xArr[1] = ;
+            }
 
             if (series.getItemCount() > 1){
                 double[] coefficients = Regression.getOLSRegression(dataset, 0);
@@ -157,7 +156,7 @@ public class Grava extends Application {
                 float formatM = Float.parseFloat(df.format(m));
                 if ((xLabel == ("Current")) && (yLabel == ("Voltage"))) {
                     gradientField.setText(formatM + "Ω");
-                } else if ((xLabel == ("Metres")) && (yLabel == ("Seconds"))) {
+                } else if ((xLabel == ("Seconds")) && (yLabel == ("Metres"))) {
                     gradientField.setText(formatM + "M/S");
                 } else {
                     gradientField.setText(String.valueOf(formatM));
@@ -178,47 +177,23 @@ public class Grava extends Application {
 
         var testButton = new Button("testBut");
         testButton.setOnAction(ae -> {
-            //System.out.println(xList.size());
-            //System.out.print(xList.get(2));
-
-            double sx = 0.0;
-            double sy = 0.0;
-            double sxx = 0.0;
-            double syy = 0.0;
-            double sxy = 0.0;
-
-            int n = xList.size();
-
-            for(int i = 0; i < n; ++i) {
-                double x = (double) xList.get(i);
-                double y = (double) yList.get(i);
-
-                sx += x;
-                sy += y;
-                sxx += x * x;
-                syy += y * y;
-                sxy += x * y;
-            }
-
-            // covariation
-            double cov = sxy / n - sx * sy / n / n;
-            // standard error of x
-            double sigmax = Math.sqrt(sxx / n -  sx * sx / n / n);
-            // standard error of y
-            double sigmay = Math.sqrt(syy / n -  sy * sy / n / n);
-            System.out.println(cov);
+            System.out.println(xList.size());
+            System.out.print(xList.get(1));
         } );
 
         var deleteButton = new Button("clear last value");
         deleteButton.setOnAction(ae -> {
             double i = testModel.size()-1;
             double z = series.getItemCount();
-
+            ObservableList<test> testModel1 = FXCollections.observableArrayList(
+            );
+            //for (i =0 to series.getItemCount()){
+            
             //System.out.println(series.getItemCount());
             testModel.remove((int) i,(int) i);
             //testModel.add((int) i,null);
 
-            table.refresh();
+            //table.refresh();
 
             series.delete((int) i,(int) i);
 
@@ -260,7 +235,7 @@ public class Grava extends Application {
         root.setBottom(enter);
 
         stage.setTitle("ScatterAdd");
-        stage.setScene(new Scene(root, 960, 500));
+        stage.setScene(new Scene(root, 1080, 500));
         stage.show();
 
     }
