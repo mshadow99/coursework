@@ -4,6 +4,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -21,7 +22,6 @@ import javafx.stage.Stage;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.fx.ChartViewer;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
@@ -44,10 +44,12 @@ public class Grava extends Application {
 
     ChoiceBox<String> domainLabels = new ChoiceBox<>();
     ChoiceBox<String> rangeLabels = new ChoiceBox<>();
+
     List seriesList = series.getItems();
     static List xList = new ArrayList();
     static List yList = new ArrayList();
-
+    String yLabel = rangeLabels.getValue();
+    String xLabel = domainLabels.getValue();
     double xArr[];
     double yArr[];
     private ObservableList<test> testModel = FXCollections.observableArrayList(
@@ -66,23 +68,13 @@ public class Grava extends Application {
 
         XYPlot plot = chart.getXYPlot();
         dataset.addSeries(trend);
+
         ValueMarker marker = new ValueMarker(0);  // position is the value on the axis
         marker.setPaint(Color.black);
-        /*
-        float dash1[] = {10.0f};
 
-        BasicStroke dashed = new BasicStroke(1,
-                BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_MITER,
-                1, dash1, 2);
-        marker.setStroke(dashed);
-
-         */
         plot.addDomainMarker(marker);
         plot.addRangeMarker(marker);
 
-        //plot.setDomainCrosshairVisible(true);
-        //plot.setRangeCrosshairVisible(true);
 
 
         plot.setRangeCrosshairValue(0.0);
@@ -93,8 +85,7 @@ public class Grava extends Application {
         r.setSeriesLinesVisible(1, Boolean.TRUE);
         r.setSeriesShapesVisible(1, Boolean.FALSE);
 
-        String yLabel = rangeLabels.getValue();
-        String xLabel = domainLabels.getValue();
+
 
         var equationField = new TextField();
         var gradientField = new TextField();
@@ -123,53 +114,43 @@ public class Grava extends Application {
 
 
         series.addChangeListener((event) -> {
-            double spinX = xSpin.getValue();
-            double spinY = ySpin.getValue();
+                    double spinX = xSpin.getValue();
+                    double spinY = ySpin.getValue();
 
 
-            if (series.getItemCount() > 1) {
-                double[] coefficients = Regression.getOLSRegression(dataset, 0);
-                //double[] coefficients = Regression.getPowerRegression(dataset, 0);
-                double c = coefficients[0]; // intercept
-                double m = coefficients[1]; // slope
-                float formatM = Float.parseFloat(df.format(m));
-                float formatC = Float.parseFloat(df.format(c));
-
-                equationField.setText("y = " + formatM + " x + " + formatC);
-                double x = series.getDataItem(0).getXValue();
-                trend.clear();
-                trend.add(x, m * x + c);
-                x = series.getDataItem(series.getItemCount() - 1).getXValue();
-                trend.add(x, m * x + c);
-                //equation.setText(String.valueOf(series.getDataItem(0).getXValue()));
-
-            }
-            //double[] coefficients = Regression.getOLSRegression(dataset, 0);
-            //double m = coefficients[1]; // slope
-
-
-        });
+                    if (series.getItemCount() > 1) {
+                        double[] coefficients = Regression.getOLSRegression(dataset, 0);
+                        double c = coefficients[0]; // intercept
+                        double m = coefficients[1]; // slope
+                        float formatM = Float.parseFloat(df.format(m));
+                        float formatC = Float.parseFloat(df.format(c));
+                        equationField.setText("y = " + Calc.vegan());
+                        //equationField.setText("y = " + Calc.vegan() + " x + " + formatC+);
+                        double x = series.getDataItem(0).getXValue();
+                        trend.clear();
+                        trend.add(x, m * x + c);
+                        x = series.getDataItem(series.getItemCount() - 1).getXValue();
+                        trend.add(x, m * x + c);
+                    }
+                });
 
 
         domainLabels.getSelectionModel().selectedItemProperty().addListener((ov, s0, s1) -> {
             chart.getXYPlot().getDomainAxis().setLabel(s1);
             xCol.setText(s1);
         });
+
         rangeLabels.getSelectionModel().selectedItemProperty().addListener((ov, s0, s1) -> {
             chart.getXYPlot().getRangeAxis().setLabel(s1);
             yCol.setText(s1);
         });
-        //if chart.getXYPlot().getRangeAxis(). == ("");
 
-        if((xLabel == ("Amps")) && (yLabel == ("Volts"))) {
-        chart.getTitle().setText("ohms");
 
-    }
-        domainLabels.getItems().addAll("Amps", "Seconds","Coulombs");
-        domainLabels.setValue("Amps");
+        domainLabels.getItems().addAll("Amps", "Seconds");
+        domainLabels.setValue("xLabel");
 
         rangeLabels.getItems().addAll("Volts", "Metres");
-        rangeLabels.setValue("Volts");
+        rangeLabels.setValue("yLabel");
 
 
 
@@ -177,45 +158,41 @@ public class Grava extends Application {
         addButton.setOnAction(ae -> {
             double spinX = xSpin.getValue();
             double spinY = ySpin.getValue();
+
             testModel.add(new test(spinX, spinY));
                 series.add(spinX, spinY);
                 xList.add(spinX);
                 yList.add(spinY);
 
-
-                    if (series.getItemCount() > 1) {
-                        //xArr[1] = ;
-                    }
-
             if (series.getItemCount() > 1){
+
                 double[] coefficients = Regression.getOLSRegression(dataset, 0);
                 double m = coefficients[1]; // slope
-                float formatM = Float.parseFloat(df.format(m));
+                float roundedM = Float.parseFloat(df.format(m));
+                yLabel = rangeLabels.getValue();
+                xLabel = domainLabels.getValue();
+                System.out.println(xLabel);
+                System.out.println(yLabel);
                 if ((xLabel == ("Amps")) && (yLabel == ("Volts"))) {
-                    gradientField.setText(formatM + "Ω");
-                } else if ((xLabel == ("Metres")) && (yLabel == ("Seconds"))) {
-                    gradientField.setText(formatM + "M/S");
+
+                    gradientField.setText(roundedM +"Ω");
+                } else if ((xLabel == ("Seconds")) && (yLabel == ("Metres"))) {
+                    gradientField.setText(roundedM + "M/S");
+                } else if ((xLabel == ("Metres/Second")) && (yLabel == ("Second"))) {
+                    gradientField.setText(roundedM + "M/S−²");
                 } else {
-                    gradientField.setText(String.valueOf(formatM));
+                    gradientField.setText(String.valueOf(roundedM));
                 }
             }
         });
 
-        //List seriesList = series.getItems();
-        /*for (var Single_Value: seriesList)
-        {
-            var temp = Single_Value;
-        }*/
-/*
-        var gradButton = new Button("grad");
-        gradButton.setOnAction(ae -> {
-        });*/
 
 
         var testButton = new Button("testBut");
         testButton.setOnAction(ae -> {
-             corField.setText(String.valueOf(Calc.correlation()));
-            //System.out.println(xList.size());
+            float roundedCore = Float.parseFloat(df.format(Calc.correlation()));
+             corField.setText(String.valueOf(roundedCore));
+
         } );
 
         var deleteButton = new Button("clear last value");
@@ -227,15 +204,9 @@ public class Grava extends Application {
             itemSelected = table.getSelectionModel().getSelectedItems();
             Object itemSelected1 = table.getSelectionModel().getSelectedItem();
             if (itemSelected1 != null){
-                // ObservableList o = (table.getSelectionModel().getSelectedItems());
-                //System.out.println(table.getSelectionModel().getSelectedIndex() + 1);
-                int n = (table.getSelectionModel().getSelectedIndex());
-                //series.delete(n, n);
-            //itemSelected.forEach(allSelected::remove);
-            //table.refresh();
 
-            //xList.remove(n);
-            //yList.remove(n);
+                int n = (table.getSelectionModel().getSelectedIndex());
+
 
             if (series.getItemCount() == 1) {
                 series.clear();
@@ -251,14 +222,6 @@ public class Grava extends Application {
 
                 }
 
-            //System.out.println(series.getItemCount());
-            //testModel.getItem().remove((int) i,(int) i);
-            //testModel.remove(i);
-            //testModel.add((int) i,null);
-
-            //table.refresh();
-
-            //series.delete((int) i,(int) i);
         }
 
         } );
@@ -275,15 +238,7 @@ public class Grava extends Application {
         cb.selectedProperty().addListener((o) -> {
             //if (series.getItemCount() > 0) {
             g.setSeriesVisible(1, cb.isSelected());
-                /*double[] coefficients = Regression.getOLSRegression(dataset, 0);
-                double b = coefficients[0]; // intercept
-                double m = coefficients[1]; // slope
-                double x = series.getDataItem(0).getXValue();
-                trend.clear();
-                trend.add(x, m * x + c);
-                x = series.getDataItem(series.getItemCount() - 1).getXValue();
-                trend.add(x, m * x + c);
-                dataset.addSeries(trend);*/
+
             //}
         });
 
@@ -311,15 +266,7 @@ public class Grava extends Application {
         stage.show();
 
     }
-    /*public ObservableList getXY(){
-        ObservableList<test> testModel = FXCollections.observableArrayList();
-        testModel.add(new test(1,2));
-        testModel.add(new test(3,4));
-        testModel.add()
-    /*new test(1,2),
-                new test(2,3),
-        return testModel;
-    }*/
+
     private void clearList(){
         Boolean answer = ConfirmBox.display("Clear","Are you sure you want to clear all values?");
         if(answer) {
