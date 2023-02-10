@@ -10,6 +10,7 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -55,7 +56,7 @@ public class Grava extends Application {
     private ObservableList<test> testModel = FXCollections.observableArrayList(
     );
     private JFreeChart createChart() {
-        return ChartFactory.createScatterPlot("Grava", "Amps", "Volts", dataset);
+        return ChartFactory.createScatterPlot("","Amps", "Volts", dataset);
     }
 
     @Override
@@ -90,6 +91,12 @@ public class Grava extends Application {
         var equationField = new TextField();
         var gradientField = new TextField();
         var corField = new TextField();
+        equationField.setText("Equation");
+        gradientField.setText("Gradient");
+        corField.setText("r-Value");
+        equationField.setEditable(false);
+        gradientField.setEditable(false);
+        corField.setEditable(false);
         table = new TableView();
 
         var xSpin = new Spinner<Double>(-10000000.000, 10000000.000, 0, 0.1);
@@ -122,10 +129,15 @@ public class Grava extends Application {
                         double[] coefficients = Regression.getOLSRegression(dataset, 0);
                         double c = coefficients[0]; // intercept
                         double m = coefficients[1]; // slope
+                        double b = Calc.leastSquare();
+                        double a = Calc.intercept();
                         float formatM = Float.parseFloat(df.format(m));
                         float formatC = Float.parseFloat(df.format(c));
-                        equationField.setText("y = " + Calc.vegan());
-                        //equationField.setText("y = " + Calc.vegan() + " x + " + formatC+);
+                        float formatB = Float.parseFloat(df.format(b));
+                        float formatA = Float.parseFloat(df.format(a));
+
+                        equationField.setText("y = " +  formatB + " + " + formatA);
+
                         double x = series.getDataItem(0).getXValue();
                         trend.clear();
                         trend.add(x, m * x + c);
@@ -146,10 +158,10 @@ public class Grava extends Application {
         });
 
 
-        domainLabels.getItems().addAll("Amps", "Seconds");
+        domainLabels.getItems().addAll("Amps", "Seconds","Second","Metres","Extension","Strain","Kilograms","Metres³","Volts");
         domainLabels.setValue("xLabel");
 
-        rangeLabels.getItems().addAll("Volts", "Metres");
+        rangeLabels.getItems().addAll("Volts", "Metres","Metres/Second","Joules","Force","Stress","Momentum","Coulombs","Ohms","Pascals");
         rangeLabels.setValue("yLabel");
 
 
@@ -158,42 +170,62 @@ public class Grava extends Application {
         addButton.setOnAction(ae -> {
             double spinX = xSpin.getValue();
             double spinY = ySpin.getValue();
-
+            xList.add(spinX);
+            yList.add(spinY);
             testModel.add(new test(spinX, spinY));
                 series.add(spinX, spinY);
-                xList.add(spinX);
-                yList.add(spinY);
+
 
             if (series.getItemCount() > 1){
-
-                double[] coefficients = Regression.getOLSRegression(dataset, 0);
-                double m = coefficients[1]; // slope
+                double m = Calc.leastSquare(); // slope
+                float roundedCore = Float.parseFloat(df.format(Calc.correlation()));
                 float roundedM = Float.parseFloat(df.format(m));
                 yLabel = rangeLabels.getValue();
                 xLabel = domainLabels.getValue();
-                System.out.println(xLabel);
-                System.out.println(yLabel);
+                corField.setText(String.valueOf(roundedCore));
                 if ((xLabel == ("Amps")) && (yLabel == ("Volts"))) {
 
                     gradientField.setText(roundedM +"Ω");
                 } else if ((xLabel == ("Seconds")) && (yLabel == ("Metres"))) {
-                    gradientField.setText(roundedM + "M/S");
-                } else if ((xLabel == ("Metres/Second")) && (yLabel == ("Second"))) {
-                    gradientField.setText(roundedM + "M/S−²");
+                    gradientField.setText(roundedM + "M/s");
+
+                } else if ((xLabel == ("Seconds")) && (yLabel == ("Metres/Seconds"))) {
+                    gradientField.setText(roundedM + "M/s²");
+
+                } else if ((xLabel == ("Seconds")) && (yLabel == ("Joules"))) {
+                    gradientField.setText(roundedM + "W");
+
+                } else if ((xLabel == ("Metres")) && (yLabel == ("Force"))) {
+                    gradientField.setText(roundedM + "N/m");
+
+                } else if ((xLabel == ("Strain")) && (yLabel == ("Stress"))) {
+                    gradientField.setText(roundedM + "Pa");
+
+                } else if ((xLabel == ("Seconds")) && (yLabel == ("Momentum"))) {
+                    gradientField.setText(roundedM + "N");
+
+                } else if ((xLabel == ("Seconds")) && (yLabel == ("Coulombs"))) {
+                    gradientField.setText(roundedM + "A");
+
+                } else if ((xLabel == ("Coulombs")) && (yLabel == ("Joules"))) {
+                    gradientField.setText(roundedM + "V");
+
+                } else if ((xLabel == ("Seconds")) && (yLabel == ("Ohms"))) {
+                    gradientField.setText(roundedM + "ρ/m²");
+
+                } else if ((xLabel == ("Kilograms")) && (yLabel == ("Joules"))) {
+                    gradientField.setText(roundedM + "J/Kg");
+
+                } else if ((xLabel == ("Volts")) && (yLabel == ("Coulombs"))) {
+                    gradientField.setText(roundedM + "F");
+
                 } else {
                     gradientField.setText(String.valueOf(roundedM));
                 }
+
+
             }
         });
-
-
-
-        var testButton = new Button("testBut");
-        testButton.setOnAction(ae -> {
-            float roundedCore = Float.parseFloat(df.format(Calc.correlation()));
-             corField.setText(String.valueOf(roundedCore));
-
-        } );
 
         var deleteButton = new Button("clear last value");
         deleteButton.setOnAction(ae -> {
@@ -243,7 +275,7 @@ public class Grava extends Application {
         });
 
         table.setItems(testModel);
-        table.getColumns().addAll(xCol,yCol);
+        table.getColumns().addAll(yCol,xCol);
 
         HBox xBox = new HBox();
         xBox.getChildren().addAll(domainLabels);
@@ -251,7 +283,7 @@ public class Grava extends Application {
         HBox yBox = new HBox();
         yBox.getChildren().addAll(rangeLabels);
 
-        var enter = new ToolBar(cb,xBox, xSpin, yBox, ySpin, addButton, equationField,gradientField, deleteButton, testButton,corField,clearButton);
+        var enter = new ToolBar(cb,xBox, xSpin, yBox, ySpin, addButton, equationField,gradientField ,corField,deleteButton,clearButton);
         BorderPane.setAlignment(enter, Pos.CENTER);
 
         BorderPane root = new BorderPane();
@@ -259,7 +291,7 @@ public class Grava extends Application {
         root.setRight(table);
         root.setBottom(enter);
 
-        stage.setTitle("ScatterAdd");
+        stage.setTitle("Grava");
         stage.setScene(new Scene(root, 1280, 700));
         stage.setMinHeight(500);
         stage.setMinWidth(900);
