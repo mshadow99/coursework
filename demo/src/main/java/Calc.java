@@ -38,7 +38,7 @@ public class Calc extends Grava {
         return rVal;
 
     }
-    public static double vegan() {
+    public static double leastSquare() {
 
         double sigmaX = 0.00;
         double sigmaY = 0.00;
@@ -68,10 +68,39 @@ public class Calc extends Grava {
         double numerator = ((n * sigmaXY) - (sigmaXY2));
         double denominator = ((n * sigmaXX) - (sigmaX2));
         double b = (numerator / denominator);
-        //double rVal = (numerator / denominator);
+
+
 
         return b;
 
     }
+    public static double intercept() {
 
+        double sigmaX = 0.00;
+        double sigmaY = 0.00;
+        double sigmaXX = 0.00;
+        double sigmaYY = 0.00;
+        double sigmaXY = 0.00;
+
+        int n = xList.size();
+
+        for (int i = 0; i < n; i++) {
+            double x = (double) xList.get(i);
+            double y = (double) yList.get(i);
+            sigmaX = sigmaX + x;
+            sigmaY = sigmaY + y;
+            sigmaXX = sigmaXX + (x * x);
+            sigmaYY = sigmaYY + (y * y);
+            sigmaXY = sigmaXY + (x * y);
+        }
+        double sigmaX2 = sigmaX * sigmaX;
+        double sigmaXY2 = sigmaX * sigmaY;
+        double meanX = sigmaX/n;
+        double meanY = sigmaY/n;
+        double numerator = ((n * sigmaXY) - (sigmaXY2));
+        double denominator = ((n * sigmaXX) - (sigmaX2));
+        double b = (numerator / denominator);
+        double a = meanY - (b*meanX);
+        return a;
+    }
 }
