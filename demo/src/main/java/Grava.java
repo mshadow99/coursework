@@ -4,13 +4,11 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -31,30 +29,34 @@ import org.jfree.data.statistics.Regression;;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import javax.swing.*;
-
 
 public class Grava extends Application {
+//Grava inherits properties from JavaFx Application Class
 
-
-    private static final XYSeries series = new XYSeries("Voltage");
+    private static final XYSeries series = new XYSeries("");
+    //a series(series) of x and y values are created in form of a 2d data structure ((x,y))
+    //XYSeries from jfreechart library
     private final XYSeries trend = new XYSeries("Trend");
+    //a second series(trend) of x and y values are created in form of a 2d data structure ((x,y))
     private final XYSeriesCollection dataset = new XYSeriesCollection(series);
-
+    //a collection of series are created called dataset and (series) is added to the dataset
     TableView table;
-
+    //a tableView table from the javaFx library is created
     ChoiceBox<String> domainLabels = new ChoiceBox<>();
     ChoiceBox<String> rangeLabels = new ChoiceBox<>();
+    //a choicebox dropdown menu of the javafx library is created
 
-    List seriesList = series.getItems();
     static List xList = new ArrayList();
+    //a list to old x values
     static List yList = new ArrayList();
+    //a list to hold y values
     String yLabel = rangeLabels.getValue();
+    //obtains the value of the rangeLabels
     String xLabel = domainLabels.getValue();
-    double xArr[];
-    double yArr[];
+    //obtains the value of the domainLabels
     private ObservableList<test> testModel = FXCollections.observableArrayList(
     );
+    //a list is created to hold the values inputted to be displayed to the table
     private JFreeChart createChart() {
         return ChartFactory.createScatterPlot("","Amps", "Volts", dataset);
     }
@@ -82,7 +84,7 @@ public class Grava extends Application {
         plot.setDomainCrosshairValue(0.0);
         plot.setDomainCrosshairLockedOnData(true);
         XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) plot.getRenderer();
-        //XYLineAndShapeRenderer r = new XYLineAndShapeRenderer(false,true);
+
         r.setSeriesLinesVisible(1, Boolean.TRUE);
         r.setSeriesShapesVisible(1, Boolean.FALSE);
 
@@ -121,30 +123,30 @@ public class Grava extends Application {
 
 
         series.addChangeListener((event) -> {
-                    double spinX = xSpin.getValue();
-                    double spinY = ySpin.getValue();
+            double spinX = xSpin.getValue();
+            double spinY = ySpin.getValue();
 
 
-                    if (series.getItemCount() > 1) {
-                        double[] coefficients = Regression.getOLSRegression(dataset, 0);
-                        double c = coefficients[0]; // intercept
-                        double m = coefficients[1]; // slope
-                        double b = Calc.leastSquare();
-                        double a = Calc.intercept();
-                        float formatM = Float.parseFloat(df.format(m));
-                        float formatC = Float.parseFloat(df.format(c));
-                        float formatB = Float.parseFloat(df.format(b));
-                        float formatA = Float.parseFloat(df.format(a));
+            if (series.getItemCount() > 1) {
+                double[] coefficients = Regression.getOLSRegression(dataset, 0);
+                double c = coefficients[0]; // intercept
+                double m = coefficients[1]; // slope
+                double b = Calc.leastSquare();
+                double a = Calc.intercept();
+                float formatM = Float.parseFloat(df.format(m));
+                float formatC = Float.parseFloat(df.format(c));
+                float formatB = Float.parseFloat(df.format(b));
+                float formatA = Float.parseFloat(df.format(a));
 
-                        equationField.setText("y = " +  formatB + " + " + formatA);
+                equationField.setText("y = " +  formatB + " + " + formatA);
 
-                        double x = series.getDataItem(0).getXValue();
-                        trend.clear();
-                        trend.add(x, m * x + c);
-                        x = series.getDataItem(series.getItemCount() - 1).getXValue();
-                        trend.add(x, m * x + c);
-                    }
-                });
+                double x = series.getDataItem(0).getXValue();
+                trend.clear();
+                trend.add(x, m * x + c);
+                x = series.getDataItem(series.getItemCount() - 1).getXValue();
+                trend.add(x, m * x + c);
+            }
+        });
 
 
         domainLabels.getSelectionModel().selectedItemProperty().addListener((ov, s0, s1) -> {
@@ -158,7 +160,7 @@ public class Grava extends Application {
         });
 
 
-        domainLabels.getItems().addAll("Amps", "Seconds","Second","Metres","Extension","Strain","Kilograms","Metres³","Volts");
+        domainLabels.getItems().addAll("Amps", "Seconds","Second","Metres","Extension","Strain","Kilograms","Metres³","Volts","Metres²");
         domainLabels.setValue("xLabel");
 
         rangeLabels.getItems().addAll("Volts", "Metres","Metres/Second","Joules","Force","Stress","Momentum","Coulombs","Ohms","Pascals");
@@ -173,7 +175,7 @@ public class Grava extends Application {
             xList.add(spinX);
             yList.add(spinY);
             testModel.add(new test(spinX, spinY));
-                series.add(spinX, spinY);
+            series.add(spinX, spinY);
 
 
             if (series.getItemCount() > 1){
@@ -219,6 +221,9 @@ public class Grava extends Application {
                 } else if ((xLabel == ("Volts")) && (yLabel == ("Coulombs"))) {
                     gradientField.setText(roundedM + "F");
 
+                } else if ((xLabel == ("Metres²")) && (yLabel == ("Force"))) {
+                    gradientField.setText(roundedM + "F");
+
                 } else {
                     gradientField.setText(String.valueOf(roundedM));
                 }
@@ -240,25 +245,25 @@ public class Grava extends Application {
                 int n = (table.getSelectionModel().getSelectedIndex());
 
 
-            if (series.getItemCount() == 1) {
-                series.clear();
-                trend.clear();
-                testModel.clear();
-            }else {
-                series.delete(n, n);
-                itemSelected.forEach(allSelected::remove);
-                //table.refresh();
+                if (series.getItemCount() == 1) {
+                    series.clear();
+                    trend.clear();
+                    testModel.clear();
+                }else {
+                    series.delete(n, n);
+                    itemSelected.forEach(allSelected::remove);
+                    //table.refresh();
 
-                xList.remove(n);
-                yList.remove(n);
+                    xList.remove(n);
+                    yList.remove(n);
 
                 }
 
-        }
+            }
 
         } );
 
-        var clearButton = new Button("clearList");
+        var clearButton = new Button("clear List");
         clearButton.setOnAction(e -> {
             e.consume();
             clearList();
